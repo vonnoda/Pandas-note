@@ -1,0 +1,239 @@
+import numpy as np
+import pandas as pd
+
+a = np.linspace(0.25,1.0,4)
+print(a)    #[0.25 0.5  0.75 1.  ]
+b = pd.Series(a,index=['a','b','c','d'])    #index可以自定义索引
+print(b)
+'''a    0.25
+   b    0.50
+   c    0.75
+   d    1.00'''
+b.index=['A','B','C','D']   #更改索引
+print(b.values)     #[0.25 0.5  0.75 1.  ]
+print(b['B'])       #0.5
+print(b[['A','C']]) #里面的[]是索引列表
+'''A    0.25
+   C    0.75'''
+b.name = 'iindex'   #修改对象本身名称
+b.index.name = 'index_name' #修改索引名称
+print(b)
+'''index_name
+   A    0.25
+   B    0.50
+   C    0.75
+   D    1.00
+   Name: iindex, dtype: float64'''
+c = pd.Series([1,2,3,4,5],index=['X','B','C','D','Y'])
+print(b+c)      #运算时根据索引标签自动对齐数据
+'''A     NaN
+   B    2.50
+   C    3.75
+   D    5.00
+   X     NaN
+   Y     NaN'''
+#创建Series
+e = pd.Series([2,4,6])      #index默认为整数序列
+f = pd.Series(5,index=[100,200,300])    #数值会重复填充
+g = pd.Series({2:'a',1:'b',3:'c'})      #默认是排序的字典
+h = pd.Series({2:'a',1:'b',3:'c'},index=[3,2])  #只会保留显式定义的键值对
+print(e)
+''' 0    2
+    1    4
+    2    6'''
+print(f)
+''' 100    5
+    200    5
+    300    5'''
+print(g)
+''' 2    a
+    1    b
+    3    c'''
+print(h)
+''' 3    c
+    2    a'''
+
+DataFrame可以看作是既有灵活的行索引，又有灵活列名的额二维数组
+data = {'state': ['Ohio', 'Ohio', 'Ohio', 'Nevada', 'Nevada', 'Nevada'],
+        'year': [2000, 2001, 2002, 2001, 2002, 2003],
+        'pop': [1.5, 1.7, 3.6, 2.4, 2.9, 3.2],
+        'other':[1,0,1,1,0,1]}
+frame = pd.DataFrame(data,index=['one', 'two', 'three', 'four','five', 'six'])  #创建DataFrame，可以自行更改index
+frame = pd.DataFrame(data,index=[0,1,2,3,4,5])
+print(frame)
+'''     state  year  pop  other
+    0    Ohio  2000  1.5      1
+    1    Ohio  2001  1.7      0
+    2    Ohio  2002  3.6      1
+    3  Nevada  2001  2.4      1
+    4  Nevada  2002  2.9      0
+    5  Nevada  2003  3.2      1'''
+print(pd.DataFrame(data,columns=['state','pop','test']))   #按指定的列输出,找不到的产生缺失值
+'''     state  pop test
+    0    Ohio  1.5  NaN
+    1    Ohio  1.7  NaN
+    2    Ohio  3.6  NaN
+    3  Nevada  2.4  NaN
+    4  Nevada  2.9  NaN
+    5  Nevada  3.2  NaN'''
+print(frame['state'])   #和下面等价，指定列获取为一个Series
+print(frame.state)
+''' 0      Ohio
+    1      Ohio
+    2      Ohio
+    3    Nevada
+    4    Nevada
+    5    Nevada
+    Name: state'''
+print(frame.loc[4])     #loc属性获取行信息
+''' state    Nevada
+    year       2002
+    pop         2.9
+    other         0
+    Name: 4'''
+frame['else']=[1,2,3,4,5,6]     #添加列信息
+print(frame)
+'''     state  year  pop  other  else
+    0    Ohio  2000  1.5      1     1
+    1    Ohio  2001  1.7      0     2
+    2    Ohio  2002  3.6      1     3
+    3  Nevada  2001  2.4      1     4
+    4  Nevada  2002  2.9      0     5
+    5  Nevada  2003  3.2      1     6'''
+frame['test']=np.arange(6.0)    #其他添加列信息的方法
+print(frame)
+'''     state  year  pop  other  else  test
+    0    Ohio  2000  1.5      1     1   0.0
+    1    Ohio  2001  1.7      0     2   1.0
+    2    Ohio  2002  3.6      1     3   2.0
+    3  Nevada  2001  2.4      1     4   3.0
+    4  Nevada  2002  2.9      0     5   4.0
+    5  Nevada  2003  3.2      1     6   5.0'''
+v = pd.Series([-1,-2,-3],index=[2,4,5])
+frame['test'] = v       #如果某个列赋值是一个Series，会精确匹配DataFrame的索引，缺失的数值将被填充为空缺值
+print(frame)
+'''     state  year  pop  other  test
+    0    Ohio  2000  1.5      1   NaN
+    1    Ohio  2001  1.7      0   NaN
+    2    Ohio  2002  3.6      1  -1.0
+    3  Nevada  2001  2.4      1   NaN
+    4  Nevada  2002  2.9      0  -2.0
+    5  Nevada  2003  3.2      1  -3.0'''
+frame['eastern'] = frame.state == 'Ohio'    #添加一个布尔值的列，判断state是否为Ohio
+print(frame)
+'''     state  year  pop  other  test  eastern
+    0    Ohio  2000  1.5      1   NaN     True
+    1    Ohio  2001  1.7      0   NaN     True
+    2    Ohio  2002  3.6      1  -1.0     True
+    3  Nevada  2001  2.4      1   NaN    False
+    4  Nevada  2002  2.9      0  -2.0    False
+    5  Nevada  2003  3.2      1  -3.0    False'''
+del frame['eastern']    #删除了easterm这列
+print(frame.columns)    #Index(['state', 'year', 'pop', 'other', 'test'], dtype='object')
+pop = {'Nevada': {2001: 2.4, 2002: 2.9},
+       'Ohio': {2000: 1.5, 2001: 1.7, 2002: 3.6}}
+frame2 = pd.DataFrame(pop)  #如果嵌套字典，则外层字典的键为列，内层字典的键为索引
+frame2.sort_index(0,ascending=True,inplace=True)   #对索引值排序,ascending默认是升序，可不写，降序把ascending改为False
+print(frame2)
+'''        Nevada  Ohio
+    2000     NaN   1.5
+    2001     2.4   1.7
+    2002     2.9   3.6'''
+print(frame2.T)     #转置DataFrame
+'''         2000  2001  2002
+    Nevada   NaN   2.4   2.9
+    Ohio     1.5   1.7   3.6'''
+print(pd.DataFrame(pop,index=[2001,2002,2003])) #明确指定索引
+'''       Nevada  Ohio
+    2001     2.4   1.7
+    2002     2.9   3.6
+    2003     NaN   NaN'''
+pdata = {'Ohio': frame2['Ohio'][:-1],
+         'Nevada': frame2['Nevada'][:2]}
+print(pd.DataFrame(pdata))
+'''       Ohio  Nevada
+    2000   1.5     NaN
+    2001   1.7     2.4'''
+frame2.index.name = 'year'      #给索引增加名称
+frame2.columns.name = 'state'   #给columns增加名称
+print(frame2)
+'''       Nevada  Ohio
+    year
+    2000     NaN   1.5
+    2001     2.4   1.7
+    2002     2.9   3.6'''
+print(frame2.values)    #values属性会以二维ndarray的形式返回数据
+''' [[nan 1.5]
+     [2.4 1.7]
+     [2.9 3.6]]'''
+print(frame.values)     #数据类型不同时，会选用所有能兼容的数据
+'''[['Ohio' 2000 1.5 1 nan]
+    ['Ohio' 2001 1.7 0 nan]
+    ['Ohio' 2002 3.6 1 -1.0]
+    ['Nevada' 2001 2.4 1 nan]
+    ['Nevada' 2002 2.9 0 -2.0]
+    ['Nevada' 2003 3.2 1 -3.0]]'''
+labels = pd.Index(['a','b','c'])    #Index属性创建的index是可以在其他数据结构里共享的
+objx = pd.Series([1.5,-2.5,0],index=labels)
+print(objx)
+''' a    1.5
+    b   -2.5
+    c    0.0'''
+print(2003 in frame2.index)     #False   index的功能也类似一个集合
+a_labels = pd.Index(['foo', 'foo', 'bar', 'bar'])
+print(a_labels)     #Index(['foo', 'foo', 'bar', 'bar'], dtype='object')   index可以包含重复的标签
+print(a_labels.unique())    #Index(['foo', 'bar'], dtype='object')  计算index中唯一值的数据
+obj = pd.Series([4.5,7.2,-5,3],index=['d', 'b', 'a', 'c'])
+obj2 = obj.reindex(['a', 'b', 'c', 'd', 'e'])   #reindex重排索引
+print(obj2)
+''' a   -5.0
+    b    7.2
+    c    3.0
+    d    4.5
+    e    NaN'''
+obj3 = pd.Series(['blue', 'purple', 'yellow'], index=[0, 2, 4])
+obj3.reindex(range(6),method='ffill')
+print(obj3)
+obj3 = pd.Series(['blue', 'purple', 'yellow'], index=[0, 2, 4])
+print(obj3.reindex(range(6),method='ffill'))    #插值向前填充
+''' 0      blue
+    1      blue
+    2    purple
+    3    purple
+    4    yellow
+    5    yellow'''
+framex = pd.DataFrame(np.arange(9).reshape((3, 3)),
+                      index=['a', 'c', 'd'],
+                      columns=['Ohio', 'Texas', 'California'])
+print(framex)
+'''    Ohio  Texas  California
+    a     0      1           2
+    c     3      4           5
+    d     6      7           8'''
+framex2 = framex.reindex(['a', 'b', 'c', 'd'])  #reindex修改行
+print(framex2)
+'''    Ohio  Texas  California
+    a   0.0    1.0         2.0
+    b   NaN    NaN         NaN
+    c   3.0    4.0         5.0
+    d   6.0    7.0         8.0'''
+framex3 = framex.reindex(columns=['Texas', 'Utah', 'California'])   #reindex通过columns修改列
+print(framex3)
+'''    Texas  Utah  California
+    a      1   NaN           2
+    c      4   NaN           5
+    d      7   NaN           8'''
+obj4 = pd.Series(np.arange(5.),index=['a', 'b', 'c', 'd', 'e'])
+new_obj = obj4.drop('c')    #删除指定值
+print(new_obj)
+''' a    0.0
+    b    1.0
+    d    3.0
+    e    4.0'''
+obj5 = pd.DataFrame(np.arange(16).reshape((4, 4)),
+                    index=['Ohio', 'Colorado', 'Utah', 'New York'],
+                   columns=['one', 'two', 'three', 'four'])
+print(obj5.drop('two',axis=1))  #删除行或列的时候，后面必须跟着维度axis
+
+
+
